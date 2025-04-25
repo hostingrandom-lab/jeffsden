@@ -15,6 +15,11 @@ router.get('/get_map_picks', (req, res) => {
     return res.status(200).send(dataBus.config.mapPicks)
 });
 
+// Serve the valorant-update.html file
+router.get('/valorant-update', (req, res) => {
+    res.sendFile(path.join(__dirname, '../valorant-update.html'));
+});
+
 // Endpoint for Player Stats and inventory information
 router.get('/get_player_stats', (req, res) => {
     // Parse the JSON data
@@ -221,6 +226,34 @@ router.get('/regenerate_user_tokens', (req, res) => {
     dataBus.regeneratePlayerTokens();
     return res.status(200).send({ status: true });
 })
+
+// Add a link to the control panel on the main page
+router.get('/', (req, res) => {
+    // Check if index.html exists in the overlays directory
+    const indexPath = path.join(__dirname, '../overlays/index.html');
+    
+    if (fs.existsSync(indexPath)) {
+        // Read the file and add a link to the control panel
+        let content = fs.readFileSync(indexPath, 'utf8');
+        
+        // Only add the link if it doesn't already exist
+        if (!content.includes('href="./valorant-update"')) {
+            // Add the control panel link in the "Available Overlays" section
+            content = content.replace(
+                /<li>> <a href="\.\/timer\/" target="_blank">Timer<\/a><\/li>/,
+                '<li>> <a href="./timer/" target="_blank">Timer</a></li>\n' +
+                '                <li>> <a href="./valorant-update" target="_blank">Control Panel</a></li>'
+            );
+            
+            // Write the modified content back to the file
+            fs.writeFileSync(indexPath, content);
+        }
+    }
+    
+    // Continue with normal flow
+    res.sendFile(path.join(__dirname, '../overlays/index.html'));
+});
+
 //Main Login Method, create a session cookie for staying connected over multiple pages.
 router.post('/authenticate', upload.none(), (req, res) => {
     const { pw } = req.body;

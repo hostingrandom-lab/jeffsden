@@ -51,6 +51,8 @@
   
   <div class="info-box">
     This panel allows you to manually control all aspects of the overlay without needing Overwolf.
+    <br><br>
+    <strong>Note:</strong> Access this page at <a href="https://jeffsden.onrender.com/valorant-update" target="_blank">https://jeffsden.onrender.com/valorant-update</a> (without .html) to ensure proper functionality.
   </div>
   
   <div class="section">
@@ -332,8 +334,13 @@
         });
         
         // Load game state and tokens (replacing the original handler)
-        await loadGameState();
-        await loadTokens();
+        try {
+          await loadGameState();
+          await loadTokens();
+        } catch (error) {
+          console.error('Failed to load state or tokens, showing hardcoded values:', error);
+          showHardcodedTokens();
+        }
         
         // Load saved configurations
         const savedConfigs = JSON.parse(localStorage.getItem('valorantOverlayConfigs') || '{}');
@@ -347,7 +354,8 @@
         }
       } catch (error) {
         console.error('Error initializing:', error);
-        setResult('Error loading data. Please try refreshing the page.', true);
+        setResult('Error loading data. Displaying hardcoded tokens.', true);
+        showHardcodedTokens();
       }
     });
     
