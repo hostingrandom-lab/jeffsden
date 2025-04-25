@@ -1,6 +1,6 @@
 {
     "player_0": {
-       "token": "asd",
+       "token": "TEAM1_PLAYER1_TOKEN",
        "is_registered": false,
        "last_updated": null,
        "data": {
@@ -21,7 +21,7 @@
        }
     },
     "player_1": {
-        "token": "dsa",
+        "token": "TEAM1_PLAYER2_TOKEN",
         "is_registered": false,
         "last_updated": null,
         "data": {
@@ -42,7 +42,7 @@
        }
      },
      "player_2": {
-        "token": "",
+        "token": "TEAM1_PLAYER3_TOKEN",
         "is_registered": false,
         "last_updated": null,
         "data": {
@@ -63,7 +63,7 @@
        }
      },
      "player_3": {
-        "token": "",
+        "token": "TEAM1_PLAYER4_TOKEN",
         "is_registered": false,
         "last_updated": null,
         "data": {
@@ -84,7 +84,7 @@
        }
      },
      "player_4": {
-        "token": "",
+        "token": "TEAM1_PLAYER5_TOKEN",
         "is_registered": false,
         "last_updated": null,
         "data": {
@@ -105,7 +105,7 @@
        }
      },
      "player_5": {
-        "token": "",
+        "token": "TEAM2_PLAYER1_TOKEN",
         "is_registered": false,
         "last_updated": null,
         "data": {
@@ -126,7 +126,7 @@
        }
      },
      "player_6": {
-        "token": "",
+        "token": "TEAM2_PLAYER2_TOKEN",
         "is_registered": false,
         "last_updated": null,
         "data": {
@@ -147,7 +147,7 @@
        }
      },
      "player_7": {
-        "token": "",
+        "token": "TEAM2_PLAYER3_TOKEN",
         "is_registered": false,
         "last_updated": null,
         "data": {
@@ -168,7 +168,7 @@
        }
      },
      "player_8": {
-        "token": "",
+        "token": "TEAM2_PLAYER4_TOKEN",
         "is_registered": false,
         "last_updated": null,
         "data": {
@@ -189,7 +189,7 @@
        }
      },
      "player_9": {
-        "token": "",
+        "token": "TEAM2_PLAYER5_TOKEN",
         "is_registered": false,
         "last_updated": null,
         "data": {

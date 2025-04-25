@@ -11,8 +11,10 @@
     button { padding: 8px 15px; margin-right: 10px; margin-top: 10px; background: #ff4655; color: white; border: none; border-radius: 4px; cursor: pointer; }
     button:hover { background: #ff293b; }
     #result { margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 4px; }
-    .token-list { margin: 10px 0; max-height: 100px; overflow-y: auto; font-family: monospace; background: #f9f9f9; padding: 5px; border-radius: 3px; }
-    .token-list div { margin: 5px 0; }
+    .token-list { margin: 10px 0; max-height: 200px; overflow-y: auto; font-family: monospace; background: #f9f9f9; padding: 15px; border-radius: 3px; border: 1px solid #ddd; }
+    .token-list div { margin: 10px 0; padding: 5px; background: #f0f0f0; border-radius: 3px; display: flex; justify-content: space-between; }
+    .token-list div span.token-value { font-weight: bold; color: #ff4655; }
+    .token-list-header { margin-bottom: 10px; font-size: 14px; color: #666; }
     .player-row { display: flex; margin-bottom: 10px; align-items: center; }
     .player-row input, .player-row select { margin-right: 10px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; }
     .team-section { display: flex; justify-content: space-between; }
@@ -31,7 +33,6 @@
     .header-logo { text-align: center; padding: 10px 0; background: linear-gradient(135deg, #0f1923 0%, #ff4655 100%); margin-bottom: 20px; border-radius: 8px; color: white; }
     .header-logo h1 { margin: 0; font-size: 28px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
     .header-logo p { margin: 5px 0 0; font-style: italic; }
-    footer { text-align: center; margin-top: 30px; padding: 20px; color: #666; background-color: #0f1923; color: white; border-radius: 8px; }
     .footer-content { display: flex; justify-content: space-between; flex-wrap: wrap; margin-bottom: 20px; }
     .footer-section { flex: 1; min-width: 200px; margin: 0 15px; text-align: left; }
     .footer-section h4 { color: #ff4655; margin-bottom: 15px; }
@@ -203,6 +204,7 @@
 
   <div class="section">
     <h2>Player Setup</h2>
+    <div class="token-list-header">Player tokens for client connections (share these with the players for the Overwolf app):</div>
     <div class="token-list" id="token-list">Loading tokens...</div>
     <h3>Team 1 Players</h3>
     <div id="team1-players">
@@ -222,11 +224,8 @@
   <div class="section">
     <h2>Overlay Links</h2>
     <p>Open these links in OBS as Browser Sources (1920x1080):</p>
-    <ul>
-      <li><a href="http://localhost:25565/player_stats/" target="_blank">Player Stats</a></li>
-      <li><a href="http://localhost:25565/game_score/" target="_blank">Game Score</a></li>
-      <li><a href="http://localhost:25565/map_picks/" target="_blank">Map Picks</a></li>
-      <li><a href="http://localhost:25565/timer/" target="_blank">Timer</a></li>
+    <ul id="overlay-links">
+      <!-- Links will be generated dynamically by script -->
     </ul>
   </div>
   
@@ -276,7 +275,7 @@
         <ul>
           <li><a href="#" onclick="refreshAllData(); return false;">Refresh Data</a></li>
           <li><a href="#" onclick="resetAllTokens(); return false;">Reset Tokens</a></li>
-          <li><a href="#" onclick="window.open('http://localhost:25565/admin', '_blank')">Admin Panel</a></li>
+          <li><a href="#" onclick="window.open(`${baseUrl}/admin`, '_blank')">Admin Panel</a></li>
         </ul>
       </div>
     </div>
@@ -286,6 +285,9 @@
   </footer>
   
   <script>
+    // Get base URL for API calls (works on both localhost and hosted domain)
+    const baseUrl = window.location.origin;
+    
     // Sample player names
     const team1Names = ["JeffoTron", "FlashPoint", "ShadowBlade", "NeonNinja", "CrystalClear"];
     const team2Names = ["S-Rank", "VoidRunner", "PixelPerfect", "MidnightHunter", "StormChaser"];
@@ -303,6 +305,25 @@
     // Load saved presets from localStorage when page loads
     window.addEventListener('DOMContentLoaded', async () => {
       try {
+        // Populate overlay links dynamically with current domain
+        const overlayLinks = document.getElementById('overlay-links');
+        const overlays = [
+          { name: 'Player Stats', path: '/player_stats/' },
+          { name: 'Game Score', path: '/game_score/' },
+          { name: 'Map Picks', path: '/map_picks/' },
+          { name: 'Timer', path: '/timer/' }
+        ];
+        
+        overlays.forEach(overlay => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = `${baseUrl}${overlay.path}`;
+          a.target = '_blank';
+          a.textContent = overlay.name;
+          li.appendChild(a);
+          overlayLinks.appendChild(li);
+        });
+        
         // Load game state and tokens (replacing the original handler)
         await loadGameState();
         await loadTokens();
@@ -325,7 +346,7 @@
     
     async function loadGameState() {
       try {
-        const response = await fetch('http://localhost:25565/print_state');
+        const response = await fetch(`${baseUrl}/print_state`);
         gameState = await response.json();
         
         // Update UI with current values
@@ -357,10 +378,12 @@
         document.getElementById('team1-abbr').value = gameState.gameState.team_1.abbreviation || '';
         document.getElementById('team1-icon').value = gameState.gameState.team_1.icon_link || '';
         document.getElementById('team1-info').value = gameState.gameState.team_1.team_info || '';
+        document.getElementById('team1-name').value = gameState.gameState.team_1.team_name || '';
         
         document.getElementById('team2-abbr').value = gameState.gameState.team_2.abbreviation || '';
         document.getElementById('team2-icon').value = gameState.gameState.team_2.icon_link || '';
         document.getElementById('team2-info').value = gameState.gameState.team_2.team_info || '';
+        document.getElementById('team2-name').value = gameState.gameState.team_2.team_name || '';
         
         // Update timer
         if (gameState.timer) {
@@ -376,7 +399,35 @@
     async function loadTokens() {
       try {
         if (!gameState) {
-          await loadGameState();
+          try {
+            await loadGameState();
+          } catch (error) {
+            console.error('Failed to load game state, using fallback tokens:', error);
+            // Fallback token data if server doesn't respond
+            const fallbackTokens = [
+              { playerKey: 'player_0', token: 'TEAM1_PLAYER1_TOKEN', team: 1, position: 0 },
+              { playerKey: 'player_1', token: 'TEAM1_PLAYER2_TOKEN', team: 1, position: 1 },
+              { playerKey: 'player_2', token: 'TEAM1_PLAYER3_TOKEN', team: 1, position: 2 },
+              { playerKey: 'player_3', token: 'TEAM1_PLAYER4_TOKEN', team: 1, position: 3 },
+              { playerKey: 'player_4', token: 'TEAM1_PLAYER5_TOKEN', team: 1, position: 4 },
+              { playerKey: 'player_5', token: 'TEAM2_PLAYER1_TOKEN', team: 2, position: 0 },
+              { playerKey: 'player_6', token: 'TEAM2_PLAYER2_TOKEN', team: 2, position: 1 },
+              { playerKey: 'player_7', token: 'TEAM2_PLAYER3_TOKEN', team: 2, position: 2 },
+              { playerKey: 'player_8', token: 'TEAM2_PLAYER4_TOKEN', team: 2, position: 3 },
+              { playerKey: 'player_9', token: 'TEAM2_PLAYER5_TOKEN', team: 2, position: 4 }
+            ];
+            
+            tokens = fallbackTokens;
+            
+            let tokenHtml = "";
+            fallbackTokens.forEach(token => {
+              tokenHtml += `<div>${token.playerKey}: <span class="token-value">${token.token}</span></div>`;
+            });
+            
+            document.getElementById('token-list').innerHTML = tokenHtml;
+            createPlayerRows();
+            return;
+          }
         }
         
         tokens = [];
@@ -393,8 +444,31 @@
               position: i % 5
             });
             
-            tokenHtml += `<div>${playerKey}: ${token}</div>`;
+            tokenHtml += `<div>${playerKey}: <span class="token-value">${token}</span></div>`;
           }
+        }
+        
+        // If no tokens were loaded from gameState, use fallback tokens
+        if (tokens.length === 0) {
+          const fallbackTokens = [
+            { playerKey: 'player_0', token: 'TEAM1_PLAYER1_TOKEN', team: 1, position: 0 },
+            { playerKey: 'player_1', token: 'TEAM1_PLAYER2_TOKEN', team: 1, position: 1 },
+            { playerKey: 'player_2', token: 'TEAM1_PLAYER3_TOKEN', team: 1, position: 2 },
+            { playerKey: 'player_3', token: 'TEAM1_PLAYER4_TOKEN', team: 1, position: 3 },
+            { playerKey: 'player_4', token: 'TEAM1_PLAYER5_TOKEN', team: 1, position: 4 },
+            { playerKey: 'player_5', token: 'TEAM2_PLAYER1_TOKEN', team: 2, position: 0 },
+            { playerKey: 'player_6', token: 'TEAM2_PLAYER2_TOKEN', team: 2, position: 1 },
+            { playerKey: 'player_7', token: 'TEAM2_PLAYER3_TOKEN', team: 2, position: 2 },
+            { playerKey: 'player_8', token: 'TEAM2_PLAYER4_TOKEN', team: 2, position: 3 },
+            { playerKey: 'player_9', token: 'TEAM2_PLAYER5_TOKEN', team: 2, position: 4 }
+          ];
+          
+          tokens = fallbackTokens;
+          
+          let tokenHtml = "";
+          fallbackTokens.forEach(token => {
+            tokenHtml += `<div>${token.playerKey}: <span class="token-value">${token.token}</span></div>`;
+          });
         }
         
         document.getElementById('token-list').innerHTML = tokenHtml;
@@ -404,6 +478,30 @@
         
       } catch (error) {
         setResult(`Error loading tokens: ${error.message}`, true);
+        
+        // Fallback to hardcoded tokens in case of complete failure
+        const fallbackTokens = [
+          { playerKey: 'player_0', token: 'TEAM1_PLAYER1_TOKEN', team: 1, position: 0 },
+          { playerKey: 'player_1', token: 'TEAM1_PLAYER2_TOKEN', team: 1, position: 1 },
+          { playerKey: 'player_2', token: 'TEAM1_PLAYER3_TOKEN', team: 1, position: 2 },
+          { playerKey: 'player_3', token: 'TEAM1_PLAYER4_TOKEN', team: 1, position: 3 },
+          { playerKey: 'player_4', token: 'TEAM1_PLAYER5_TOKEN', team: 1, position: 4 },
+          { playerKey: 'player_5', token: 'TEAM2_PLAYER1_TOKEN', team: 2, position: 0 },
+          { playerKey: 'player_6', token: 'TEAM2_PLAYER2_TOKEN', team: 2, position: 1 },
+          { playerKey: 'player_7', token: 'TEAM2_PLAYER3_TOKEN', team: 2, position: 2 },
+          { playerKey: 'player_8', token: 'TEAM2_PLAYER4_TOKEN', team: 2, position: 3 },
+          { playerKey: 'player_9', token: 'TEAM2_PLAYER5_TOKEN', team: 2, position: 4 }
+        ];
+        
+        tokens = fallbackTokens;
+        
+        let tokenHtml = "";
+        fallbackTokens.forEach(token => {
+          tokenHtml += `<div>${token.playerKey}: <span class="token-value">${token.token}</span></div>`;
+        });
+        
+        document.getElementById('token-list').innerHTML = tokenHtml;
+        createPlayerRows();
       }
     }
     
@@ -532,7 +630,7 @@
         formData.append('team_1_score', team1Score);
         formData.append('team_2_score', team2Score);
         
-        const response = await fetch('http://localhost:25565/update_team_info', {
+        const response = await fetch(`${baseUrl}/update_team_info`, {
           method: 'POST',
           body: formData
         });
@@ -565,7 +663,7 @@
         formData.append('stage', gameState.gameState.game_flow.map_2.state);
         formData.append('spike', gameState.gameState.spike_down ? 'down' : 'up');
         
-        await fetch('http://localhost:25565/change_game_state', {
+        await fetch(`${baseUrl}/change_game_state`, {
           method: 'POST',
           body: formData
         });
@@ -584,7 +682,7 @@
         formData.append('stage', gameState.gameState.game_flow.map_2.state);
         formData.append('spike', spikeStatus);
         
-        await fetch('http://localhost:25565/change_game_state', {
+        await fetch(`${baseUrl}/change_game_state`, {
           method: 'POST',
           body: formData
         });
@@ -610,7 +708,7 @@
         const formData = new FormData();
         formData.append('winningTeam', team);
         
-        await fetch('http://localhost:25565/end_round', {
+        await fetch(`${baseUrl}/end_round`, {
           method: 'POST',
           body: formData
         });
@@ -630,7 +728,7 @@
         const formData = new FormData();
         formData.append('winningTeam', 'team_1'); // Doesn't affect scores if we don't increment
         
-        await fetch('http://localhost:25565/end_round', {
+        await fetch(`${baseUrl}/end_round`, {
           method: 'POST',
           body: formData
         });
@@ -650,7 +748,7 @@
           gameState.gameState.game_flow.map_2.state = mapState;
           
           // Force a recalculation of the map flow
-          await fetch('http://localhost:25565/recalculate_maps', {
+          await fetch(`${baseUrl}/recalculate_maps`, {
             method: 'GET'
           });
           
@@ -677,7 +775,7 @@
         formData.append('timeMiliseconds', duration * 1000);
         formData.append('description', description);
         
-        const response = await fetch('http://localhost:25565/set_timer', {
+        const response = await fetch(`${baseUrl}/set_timer`, {
           method: 'POST',
           body: formData
         });
@@ -694,7 +792,7 @@
           const formData = new FormData();
           formData.append('playerToken', tokenData.token);
           
-          const response = await fetch('http://localhost:25565/register_external_user', {
+          const response = await fetch(`${baseUrl}/register_external_user`, {
             method: 'POST',
             body: formData
           });
@@ -744,7 +842,7 @@
           const formData = new FormData();
           formData.append('playerData', JSON.stringify(playerData));
           
-          await fetch('http://localhost:25565/update_player_state', {
+          await fetch(`${baseUrl}/update_player_state`, {
             method: 'POST',
             body: formData
           });
@@ -803,7 +901,6 @@
       resultElement.style.color = isError ? '#cc0000' : '#333333';
     }
     
-    // New utility functions for footer links
     async function refreshAllData() {
       try {
         setResult('Refreshing all data...');
@@ -821,7 +918,7 @@
         if (!confirmReset) return;
         
         setResult('Regenerating all tokens...');
-        const response = await fetch('http://localhost:25565/regenerate_user_tokens', {
+        const response = await fetch(`${baseUrl}/regenerate_user_tokens`, {
           method: 'GET'
         });
         
@@ -837,7 +934,6 @@
       }
     }
     
-    // Announcement system functions
     async function sendAnnouncement() {
       try {
         const message = document.getElementById('announcement-text').value;
@@ -859,7 +955,7 @@
         formData.append('duration', duration * 1000); // Convert to milliseconds
         formData.append('type', type);
         
-        const response = await fetch('http://localhost:25565/broadcast_message', {
+        const response = await fetch(`${baseUrl}/broadcast_message`, {
           method: 'POST',
           body: formData
         });
@@ -882,7 +978,6 @@
       await sendAnnouncement();
     }
     
-    // Configuration preset functions
     function getCurrentConfig() {
       const config = {
         version: "1.0",
